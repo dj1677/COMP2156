@@ -1,36 +1,46 @@
-name: CI
+name: Deploy React App COMP2156 DevOps Project CI
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
+      - name: Set up Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
 
-    - name: Install dependencies
-      run: npm install
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: node_modules
 
-    - name: Run tests
-      run: npm test
+      - name: Install dependencies
+        run: npm install
 
-    - name: Deploy to GitHub Pages
-      if: success()
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./build
-        publish_branch: gh-pages
-        user_name: "github-actions[bot]"
-        user_email: "github-actions[bot]@users.noreply.github.com"
+      - name: Build React app
+        run: npm run build
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+          publish_branch: gh-pages
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
